@@ -1,0 +1,42 @@
+CREATE TABLE IF NOT EXISTS admins (
+  id SERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS testimonials (
+  id TEXT PRIMARY KEY,
+  author TEXT NOT NULL,
+  avatar TEXT,
+  rate INTEGER NOT NULL DEFAULT 5,
+  published BOOLEAN NOT NULL DEFAULT true,
+  text JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS applications (
+  id TEXT PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  phone_number TEXT NOT NULL,
+  email TEXT,
+  message TEXT,
+  is_read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id TEXT PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  image TEXT,
+  date DATE NOT NULL,
+  read_time INTEGER NOT NULL DEFAULT 1,
+  published BOOLEAN NOT NULL DEFAULT true,
+  category JSONB NOT NULL DEFAULT '{}',
+  title JSONB NOT NULL DEFAULT '{}',
+  excerpt JSONB NOT NULL DEFAULT '{}',
+  content JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
