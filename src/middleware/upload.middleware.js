@@ -37,7 +37,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 8 * 1024 * 1024 },
+  // Rasm hajmiga cheklov qo'yilmagan — istalgan kattalikdagi rasm qabul qilinadi.
 });
 
 module.exports = { upload, UPLOAD_DIR };
