@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS posts (
   date DATE NOT NULL,
   read_time INTEGER NOT NULL DEFAULT 1,
   published BOOLEAN NOT NULL DEFAULT true,
+  views INTEGER NOT NULL DEFAULT 0,
   category JSONB NOT NULL DEFAULT '{}',
   title JSONB NOT NULL DEFAULT '{}',
   excerpt JSONB NOT NULL DEFAULT '{}',
@@ -40,3 +41,7 @@ CREATE TABLE IF NOT EXISTS posts (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Jadval avvalroq yaratilgan bo'lsa ham "views" ustuni qo'shilishi uchun
+-- (CREATE TABLE IF NOT EXISTS mavjud jadvalni o'zgartirmaydi).
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;

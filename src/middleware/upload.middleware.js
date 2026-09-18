@@ -25,15 +25,21 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
 // Fayl xotirada (buffer) qabul qilinadi — diskka yozishdan oldin
 // controller uni sharp bilan siqib/kichraytirib keyin yozadi
 // (qarang: controllers/upload.controller.js). Shu tufayli kattaroq
 // yuklangan rasmlar ham diskda ortiqcha joy egallamaydi va saytda
 // tezroq yuklanadi.
+//
+// `limits.fileSize` multer/busboy darajasida ishlaydi: chegaradan oshgan
+// zahoti oqim to'xtatiladi (butun faylni xotiraga o'qib bo'lguncha
+// kutilmaydi), shuning uchun katta fayl serverni sekinlashtirmaydi.
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter,
-  // Rasm hajmiga cheklov qo'yilmagan — istalgan kattalikdagi rasm qabul qilinadi.
+  limits: { fileSize: MAX_FILE_SIZE },
 });
 
 const buildFilename = (originalname, ext) => {
@@ -41,4 +47,4 @@ const buildFilename = (originalname, ext) => {
   return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}${safeExt}`;
 };
 
-module.exports = { upload, UPLOAD_DIR, buildFilename };
+module.exports = { upload, UPLOAD_DIR, buildFilename, MAX_FILE_SIZE };

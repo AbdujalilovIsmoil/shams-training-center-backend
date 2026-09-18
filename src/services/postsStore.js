@@ -21,6 +21,7 @@ const mapRow = (row) => ({
   date: toDateString(row.date),
   readTime: row.read_time,
   published: row.published,
+  views: Number(row.views) || 0,
   category: row.category,
   title: row.title,
   excerpt: row.excerpt,
@@ -41,6 +42,16 @@ const getById = async (id) => {
 
 const getBySlug = async (slug) => {
   const { rows } = await pool.query("SELECT * FROM posts WHERE slug = $1", [slug]);
+  return rows[0] ? mapRow(rows[0]) : null;
+};
+
+// Client sayt bitta maqolani slug bo'yicha ochganda chaqiriladi — bir so'rovda
+// ham hisoblaydi, ham eng so'nggi qatorni qaytaradi (race condition bo'lmasligi uchun).
+const incrementViewsBySlug = async (slug) => {
+  const { rows } = await pool.query(
+    "UPDATE posts SET views = views + 1 WHERE slug = $1 RETURNING *",
+    [slug]
+  );
   return rows[0] ? mapRow(rows[0]) : null;
 };
 
@@ -134,6 +145,7 @@ module.exports = {
   getById,
   getBySlug,
   isSlugTaken,
+  incrementViewsBySlug,
   create,
   update,
   remove,

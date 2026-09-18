@@ -29,8 +29,12 @@ const getPosts = asyncHandler(async (req, res) => {
   res.json({ success: true, data: posts });
 });
 
+// Bu endpoint client saytda bitta maqolani ochish uchun ishlatiladi, shuning
+// uchun har chaqirilganda ko'rishlar sonini (views) oshiradi. Admin panel
+// tahrirlash uchun getPostById'dan (id bo'yicha) foydalanadi — u ko'rishni
+// oshirmaydi, aks holda admin maqolani ochib tahrirlaganda ham view hisoblanardi.
 const getPostBySlug = asyncHandler(async (req, res) => {
-  const post = await postsStore.getBySlug(req.params.slug);
+  const post = await postsStore.incrementViewsBySlug(req.params.slug);
 
   if (!post) {
     throw new ApiError(404, "Maqola topilmadi");
