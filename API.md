@@ -10,8 +10,9 @@ Barcha javoblar `{ "success": boolean, "data"?: ..., "message"?: string }` shakl
 
 | Metod | Yo'l | Ruxsat | Tavsif |
 |---|---|---|---|
-| POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }` |
+| POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }`. Muvaffaqiyatli kirishda fonda IP/shahar/mamlakat/brauzer bazaga yoziladi |
 | GET | `/auth/me` | admin | joriy admin ma'lumoti |
+| GET | `/auth/login-logs` | admin | so'nggi 50 ta kirish: `{ username, ip, city, country, userAgent, createdAt }[]` — admin panel "Kirish tarixi" sahifasi shu yerdan o'qiydi |
 
 ## Posts (bloglar)
 
