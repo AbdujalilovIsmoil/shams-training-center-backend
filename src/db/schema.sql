@@ -54,3 +54,15 @@ CREATE TABLE IF NOT EXISTS site_views (
 );
 
 INSERT INTO site_views (id, views) VALUES (1, 0) ON CONFLICT (id) DO NOTHING;
+
+-- Admin panelga har bir kirish (login) urinishi shu yerga yoziladi —
+-- "qayerdan kirilgani" (IP, shahar/mamlakat, brauzer) ko'rinishi uchun.
+CREATE TABLE IF NOT EXISTS login_logs (
+  id SERIAL PRIMARY KEY,
+  username TEXT NOT NULL,
+  ip TEXT,
+  city TEXT,
+  country TEXT,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

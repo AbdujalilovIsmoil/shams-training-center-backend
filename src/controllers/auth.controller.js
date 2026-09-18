@@ -4,6 +4,18 @@ const env = require("../config/env");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const adminsRepository = require("../repositories/adminsRepository");
+const loginLogsStore = require("../services/loginLogsStore");
+const { lookupLocation } = require("../utils/geoLookup");
+
+// Login javobini kutdirmaslik uchun IP->shahar aniqlash va bazaga yozish
+// fonda bajariladi (login javobi shu tugashini kutmaydi).
+const recordLoginAttempt = async (username, req) => {
+  const ip = req.ip;
+  const userAgent = req.headers["user-agent"] || "";
+  const { city, country } = await lookupLocation(ip);
+
+  await loginLogsStore.create({ username, ip, city, country, userAgent });
+};
 
 const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
@@ -24,6 +36,8 @@ const login = asyncHandler(async (req, res) => {
     expiresIn: env.jwtExpiresIn,
   });
 
+  recordLoginAttempt(admin.username, req).catch(() => {});
+
   res.json({
     success: true,
     data: { token, username: admin.username },
@@ -34,4 +48,9 @@ const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { username: req.user.username } });
 });
 
-module.exports = { login, me };
+const getLoginLogs = asyncHandler(async (req, res) => {
+  const logs = await loginLogsStore.getRecent(50);
+  res.json({ success: true, data: logs });
+});
+
+module.exports = { login, me, getLoginLogs };
