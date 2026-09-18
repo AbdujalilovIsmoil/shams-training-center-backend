@@ -5,6 +5,7 @@ const uploadRoutes = require("./upload.routes");
 const testimonialsRoutes = require("./testimonials.routes");
 const applicationsRoutes = require("./applications.routes");
 const chatRoutes = require("./chat.routes");
+const allViewRoutes = require("./allView.routes");
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/upload", uploadRoutes);
 router.use("/testimonials", testimonialsRoutes);
 router.use("/applications", applicationsRoutes);
 router.use("/chat", chatRoutes);
+router.use("/all-view", allViewRoutes);
 
 module.exports = router;

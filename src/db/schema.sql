@@ -45,3 +45,12 @@ CREATE TABLE IF NOT EXISTS posts (
 -- Jadval avvalroq yaratilgan bo'lsa ham "views" ustuni qo'shilishi uchun
 -- (CREATE TABLE IF NOT EXISTS mavjud jadvalni o'zgartirmaydi).
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;
+
+-- Butun sayt bo'yicha (har bir maqolaga bog'lanmagan) umumiy tashrif soni —
+-- doim bitta qator (id = 1) saqlanadi va shu qator ustida oshiriladi.
+CREATE TABLE IF NOT EXISTS site_views (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  views INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO site_views (id, views) VALUES (1, 0) ON CONFLICT (id) DO NOTHING;
