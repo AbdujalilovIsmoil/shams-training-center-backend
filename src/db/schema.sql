@@ -64,5 +64,12 @@ CREATE TABLE IF NOT EXISTS login_logs (
   city TEXT,
   country TEXT,
   user_agent TEXT,
+  jti TEXT,
+  revoked_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Jadval avvalroq yaratilgan bo'lsa ham qo'shilishi uchun.
+ALTER TABLE login_logs ADD COLUMN IF NOT EXISTS jti TEXT;
+ALTER TABLE login_logs ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ;
+CREATE UNIQUE INDEX IF NOT EXISTS login_logs_jti_idx ON login_logs (jti);
