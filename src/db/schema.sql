@@ -55,6 +55,24 @@ CREATE TABLE IF NOT EXISTS site_views (
 
 INSERT INTO site_views (id, views) VALUES (1, 0) ON CONFLICT (id) DO NOTHING;
 
+-- Bosh sahifadagi "2000+ o'quvchi", "110+ C1 daraja" kabi statistik
+-- raqamlar — doim bitta qator (id = 1) saqlanadi, admin panel shu qatorni
+-- yangilaydi, client sayt esa shu yerdan o'qib ko'rsatadi.
+CREATE TABLE IF NOT EXISTS site_stats (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  students_count INTEGER NOT NULL DEFAULT 0,
+  c1_students INTEGER NOT NULL DEFAULT 0,
+  b1_students INTEGER NOT NULL DEFAULT 0,
+  teachers_trained INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Saytda hozir ko'rinib turgan qiymatlar bilan boshlab qo'yiladi (2000+,
+-- 110+, 500+, 20+) — shu bilan birinchi deploy'da ko'rinish o'zgarmaydi.
+INSERT INTO site_stats (id, students_count, c1_students, b1_students, teachers_trained)
+VALUES (1, 2000, 110, 500, 20)
+ON CONFLICT (id) DO NOTHING;
+
 -- Admin panelga har bir kirish (login) urinishi shu yerga yoziladi —
 -- "qayerdan kirilgani" (IP, shahar/mamlakat, brauzer) ko'rinishi uchun.
 CREATE TABLE IF NOT EXISTS login_logs (

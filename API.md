@@ -51,6 +51,32 @@ Namuna javob:
 { "success": true, "data": { "views": 1432 } }
 ```
 
+## Bosh sahifa statistikasi — `/site-stats`
+
+Bosh sahifadagi "2000+ o'qigan o'quvchi", "110+ C1 daraja" kabi 4 ta statistik
+raqam. Admin panel "Statistika" sahifasidan shu raqamlarni tahrirlaydi
+(matnlar/label'lar client saytda qattiq yozilgan — o'zgarmaydi, faqat sonlar).
+
+| Metod | Yo'l | Ruxsat | Tavsif |
+|---|---|---|---|
+| GET | `/site-stats` | ochiq | joriy 4 ta raqamni qaytaradi: `{ studentsCount, c1Students, b1Students, teachersTrained, updatedAt }` |
+| PUT | `/site-stats` | admin | shu 4 ta maydonni yangilaydi (har biri manfiy bo'lmagan butun son bo'lishi shart) |
+
+Namuna javob:
+
+```json
+{
+  "success": true,
+  "data": {
+    "studentsCount": 2000,
+    "c1Students": 110,
+    "b1Students": 500,
+    "teachersTrained": 20,
+    "updatedAt": "2026-09-20T12:00:00.000Z"
+  }
+}
+```
+
 ## Rasm yuklash — `/upload`
 
 | Metod | Yo'l | Ruxsat | Tavsif |
