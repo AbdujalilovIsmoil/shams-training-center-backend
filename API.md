@@ -77,6 +77,35 @@ Namuna javob:
 }
 ```
 
+## Sayt tepasidagi reklama banneri — `/banner`
+
+Sayt eng tepasida ko'rinadigan bitta katta banner (rasm + bosilganda o'tiladigan
+havola). Admin panel "Banner" sahifasidan rasm yuklaydi (`/upload` orqali),
+havolani kiritadi va yoqadi/o'chiradi.
+
+| Metod | Yo'l | Ruxsat | Tavsif |
+|---|---|---|---|
+| GET | `/banner` | ochiq | joriy holatni qaytaradi: `{ imageUrl, linkUrl, isEnabled, updatedAt }` |
+| PUT | `/banner` | admin | `{ imageUrl, linkUrl, isEnabled }` ni saqlaydi. `isEnabled: true` bo'lsa `imageUrl` va to'g'ri formatdagi `linkUrl` majburiy |
+
+Namuna javob:
+
+```json
+{
+  "success": true,
+  "data": {
+    "imageUrl": "/uploads/banner-123.jpg",
+    "linkUrl": "https://t.me/Shams_markaz_admin",
+    "isEnabled": true,
+    "updatedAt": "2026-09-20T12:00:00.000Z"
+  }
+}
+```
+
+**Ishlatilishi:** client sayt (`shams-learning-centre`) `GET /banner`ni o'qiydi;
+`isEnabled` va `imageUrl` bo'lsagina rasm `linkUrl`ga olib boradigan havola
+ichida sayt eng tepasida ko'rsatiladi.
+
 ## Rasm yuklash — `/upload`
 
 | Metod | Yo'l | Ruxsat | Tavsif |

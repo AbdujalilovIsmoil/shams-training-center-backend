@@ -7,6 +7,7 @@ const applicationsRoutes = require("./applications.routes");
 const chatRoutes = require("./chat.routes");
 const allViewRoutes = require("./allView.routes");
 const siteStatsRoutes = require("./siteStats.routes");
+const adBannerRoutes = require("./adBanner.routes");
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/applications", applicationsRoutes);
 router.use("/chat", chatRoutes);
 router.use("/all-view", allViewRoutes);
 router.use("/site-stats", siteStatsRoutes);
+router.use("/banner", adBannerRoutes);
 
 module.exports = router;

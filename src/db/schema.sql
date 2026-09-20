@@ -73,6 +73,18 @@ INSERT INTO site_stats (id, students_count, c1_students, b1_students, teachers_t
 VALUES (1, 2000, 110, 500, 20)
 ON CONFLICT (id) DO NOTHING;
 
+-- Sayt tepasidagi bitta katta reklama banneri — rasm, bosilganda o'tiladigan
+-- havola va uni yoqish/o'chirish holati. Doim bitta qator (id = 1) saqlanadi.
+CREATE TABLE IF NOT EXISTS ad_banner (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  image_url TEXT,
+  link_url TEXT,
+  is_enabled BOOLEAN NOT NULL DEFAULT false,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO ad_banner (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
 -- Admin panelga har bir kirish (login) urinishi shu yerga yoziladi —
 -- "qayerdan kirilgani" (IP, shahar/mamlakat, brauzer) ko'rinishi uchun.
 CREATE TABLE IF NOT EXISTS login_logs (
