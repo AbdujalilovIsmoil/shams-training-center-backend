@@ -5,6 +5,10 @@ CREATE TABLE IF NOT EXISTS admins (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Profil sahifasida admin o'zi kiritgan parolni ko'rishi uchun qaytarib
+-- ochiladigan shifrlangan nusxa (autentifikatsiya baribir password_hash orqali).
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS password_encrypted TEXT;
+
 CREATE TABLE IF NOT EXISTS testimonials (
   id TEXT PRIMARY KEY,
   author TEXT NOT NULL,

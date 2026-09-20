@@ -68,4 +68,33 @@ const getRecent = async (limit = 50) => {
   return rows.map(mapRow);
 };
 
-module.exports = { create, setLocation, findById, findByJti, revoke, getRecent };
+// Parol o'zgartirilganda xavfsizlik uchun joriy sessiyadan boshqa barcha faol
+// sessiyalar chiqarib yuboriladi (jti bo'yicha, joriy sessiya tegilmaydi).
+const revokeAllExcept = async (username, exceptJti) => {
+  await pool.query(
+    `UPDATE login_logs
+     SET revoked_at = now()
+     WHERE username = $1 AND revoked_at IS NULL AND (jti IS NULL OR jti != $2)`,
+    [username, exceptJti || null]
+  );
+};
+
+// Login o'zgartirilganda kirish tarixidagi eski qatorlar ham yangi username
+// bilan ko'rinishi uchun (hech qanday qator o'chirilmaydi/yo'qolmaydi).
+const renameUsername = async (oldUsername, newUsername) => {
+  await pool.query("UPDATE login_logs SET username = $1 WHERE username = $2", [
+    newUsername,
+    oldUsername,
+  ]);
+};
+
+module.exports = {
+  create,
+  setLocation,
+  findById,
+  findByJti,
+  revoke,
+  getRecent,
+  revokeAllExcept,
+  renameUsername,
+};
