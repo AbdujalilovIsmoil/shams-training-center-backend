@@ -8,6 +8,10 @@ const env = {
     .filter(Boolean),
   jwtSecret: process.env.JWT_SECRET || "dev_secret_change_me",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  // Bitta admin uchun bir vaqtda faol bo'lishi mumkin bo'lgan sessiyalar soni —
+  // shundan ortig'i login qilinganda eng eski sessiya avtomatik chiqarib
+  // yuboriladi (src/services/loginLogsStore.js#enforceSessionLimit).
+  maxActiveSessions: Number(process.env.MAX_ACTIVE_SESSIONS) || 3,
   databaseUrl:
     process.env.DATABASE_URL || "postgresql://localhost:5432/shams_blog",
   // Faqat `npm run migrate` skripti admin foydalanuvchini shu login/parol bilan

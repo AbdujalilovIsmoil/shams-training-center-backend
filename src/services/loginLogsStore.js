@@ -73,14 +73,31 @@ const getRecent = async (limit = 50) => {
   return rows.map(mapRow);
 };
 
-// Login qilinganda (yagona faol sessiya siyosati) va "Boshqalarni chiqarib
-// yuborish" tugmasi bosilganda — joriy sessiyadan (jti) boshqa barcha
-// qatorlar jadvaldan o'chiriladi, ular endi "Kirish tarixi"da ko'rinmaydi.
+// "Boshqalarni chiqarib yuborish" tugmasi bosilganda (yoki parol
+// o'zgartirilganda) — joriy sessiyadan (jti) boshqa barcha qatorlar
+// jadvaldan o'chiriladi, ular endi "Sessiyalar"da ko'rinmaydi.
 const revokeAllExcept = async (username, exceptJti) => {
   await pool.query(
     `DELETE FROM login_logs
      WHERE username = $1 AND (jti IS NULL OR jti != $2)`,
     [username, exceptJti || null]
+  );
+};
+
+// Har bir login'dan keyin chaqiriladi — bitta admin uchun bir vaqtda
+// ko'pi bilan `maxSessions` ta sessiya faol bo'lishi kerak (masalan 3):
+// eng yangi `maxSessions` ta qator (yangi kirgan qurilma shular ichida)
+// qoldiriladi, undan ortiq — eng ESKI sessiyalar — jadvaldan o'chiriladi.
+const enforceSessionLimit = async (username, maxSessions) => {
+  await pool.query(
+    `DELETE FROM login_logs
+     WHERE id IN (
+       SELECT id FROM login_logs
+       WHERE username = $1
+       ORDER BY created_at DESC
+       OFFSET $2
+     )`,
+    [username, maxSessions]
   );
 };
 
@@ -92,4 +109,5 @@ module.exports = {
   revoke,
   getRecent,
   revokeAllExcept,
+  enforceSessionLimit,
 };

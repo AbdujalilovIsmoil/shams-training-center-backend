@@ -10,7 +10,7 @@ Barcha javoblar `{ "success": boolean, "data"?: ..., "message"?: string }` shakl
 
 | Metod | Yo'l | Ruxsat | Tavsif |
 |---|---|---|---|
-| POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }`. Muvaffaqiyatli kirishda fonda IP/shahar/mamlakat/brauzer bazaga yoziladi. **Bir vaqtda faqat bitta sessiya faol bo'ladi** — yangi tizim/qurilmadan (Windows, macOS, Linux va h.k.) kirilganda avvalgi barcha sessiyalar (boshqa tizimlardagilar ham) avtomatik chiqarib yuboriladi |
+| POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }`. Muvaffaqiyatli kirishda fonda IP/shahar/mamlakat/brauzer bazaga yoziladi. **Bir vaqtda ko'pi bilan `MAX_ACTIVE_SESSIONS` ta (standart: 3) sessiya faol bo'ladi** — shundan ortiq tizim/qurilmadan (Windows, macOS, Linux, Android, iOS va h.k.) kirilsa, eng ESKI sessiya(lar) avtomatik chiqarib yuboriladi |
 | GET | `/auth/me` | admin | joriy admin ma'lumoti |
 | GET | `/auth/login-logs` | admin | hozir **faol** bo'lgan barcha sessiyalar: `{ id, username, ip, city, country, userAgent, os, browser, jti, createdAt }[]`. Ro'yxat **joriy so'rovni yuborayotgan admin sessiyasi birinchi**, qolgan boshqa sessiyalar keyin keladigan tartibda qaytadi. `os`/`browser` `User-Agent` sarlavhasidan backendda aniqlanadi (Node'ning o'rnatilgan `os` moduli emas — u faqat serverning o'z tizimini bilar edi, klientnikini emas) |
 | DELETE | `/auth/login-logs/:id` | admin | shu sessiyani **butunlay o'chiradi** (soft-revoke emas) — o'sha token bilan keyingi so'rov darhol rad etiladi va sessiya ro'yxatda boshqa ko'rinmaydi. **O'z joriy sessiyangizni chiqarib yubora olmaysiz** — `400` bilan rad etiladi |

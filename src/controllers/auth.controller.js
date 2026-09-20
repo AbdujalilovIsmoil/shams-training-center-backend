@@ -58,12 +58,11 @@ const login = asyncHandler(async (req, res) => {
     jti,
   });
 
-  // Bitta paytda faqat bitta qurilma/tizim (Windows, macOS, Linux va h.k.)
-  // sessiyasi faol bo'lishi kerak — qaysi tizimdan (yangi kompyuter/brauzer)
-  // kirilishidan qat'i nazar, shu tizim endi yagona faol sessiya bo'lib
-  // qoladi, avvalgi barcha sessiyalar (boshqa tizimlardagilar ham) darhol
-  // chiqarib yuboriladi.
-  await loginLogsStore.revokeAllExcept(admin.username, jti);
+  // Bir vaqtda ko'pi bilan `env.maxActiveSessions` ta (standart: 3) sessiya
+  // faol bo'lishi mumkin — qaysi tizimdan (Windows, macOS, Linux, Android,
+  // iOS yoki boshqa) kirilishidan qat'i nazar. Shu chegaradan oshsa, eng
+  // ESKI sessiya(lar) avtomatik chiqarib yuboriladi.
+  await loginLogsStore.enforceSessionLimit(admin.username, env.maxActiveSessions);
 
   const token = jwt.sign({ username: admin.username, jti }, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn,
