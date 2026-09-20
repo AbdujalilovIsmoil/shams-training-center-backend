@@ -44,6 +44,13 @@ const login = asyncHandler(async (req, res) => {
     jti,
   });
 
+  // Bitta paytda faqat bitta qurilma/tizim (Windows, macOS, Linux va h.k.)
+  // sessiyasi faol bo'lishi kerak — qaysi tizimdan (yangi kompyuter/brauzer)
+  // kirilishidan qat'i nazar, shu tizim endi yagona faol sessiya bo'lib
+  // qoladi, avvalgi barcha sessiyalar (boshqa tizimlardagilar ham) darhol
+  // chiqarib yuboriladi.
+  await loginLogsStore.revokeAllExcept(admin.username, jti);
+
   const token = jwt.sign({ username: admin.username, jti }, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn,
   });

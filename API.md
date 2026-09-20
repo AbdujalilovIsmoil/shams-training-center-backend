@@ -10,7 +10,7 @@ Barcha javoblar `{ "success": boolean, "data"?: ..., "message"?: string }` shakl
 
 | Metod | Yo'l | Ruxsat | Tavsif |
 |---|---|---|---|
-| POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }`. Muvaffaqiyatli kirishda fonda IP/shahar/mamlakat/brauzer bazaga yoziladi |
+| POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }`. Muvaffaqiyatli kirishda fonda IP/shahar/mamlakat/brauzer bazaga yoziladi. **Bir vaqtda faqat bitta sessiya faol bo'ladi** — yangi tizim/qurilmadan (Windows, macOS, Linux va h.k.) kirilganda avvalgi barcha sessiyalar (boshqa tizimlardagilar ham) avtomatik chiqarib yuboriladi |
 | GET | `/auth/me` | admin | joriy admin ma'lumoti |
 | GET | `/auth/login-logs` | admin | so'nggi 200 ta kirish: `{ id, username, ip, city, country, userAgent, jti, revokedAt, createdAt }[]` — admin panel "Kirish tarixi" sahifasi shu yerdan o'qiydi (hozir faol bo'lgan barcha sessiyalar shu ro'yxatda ko'rinadi) |
 | DELETE | `/auth/login-logs/:id` | admin | shu sessiyani chiqarib yuboradi (`revokedAt` belgilanadi, keyingi so'rovda token rad etiladi). **O'z joriy sessiyangizni chiqarib yubora olmaysiz** — `400` bilan rad etiladi |
