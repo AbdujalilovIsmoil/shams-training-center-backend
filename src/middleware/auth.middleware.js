@@ -21,10 +21,11 @@ const requireAuth = async (req, res, next) => {
   try {
     // Eski (jti'siz) tokenlar bekor qilish imkoniyati kiritilishidan oldin
     // berilgan — ular muddati tugaguncha amal qiladi. Yangi tokenlar esa
-    // "Kirish tarixi" orqali chiqarib yuborilgan bo'lsa, shu yerda rad etiladi.
+    // "Kirish tarixi" orqali chiqarib yuborilgan (shu bilan jadvaldan
+    // o'chirilgan) bo'lsa, shu yerda rad etiladi.
     if (payload.jti) {
       const session = await loginLogsStore.findByJti(payload.jti);
-      if (!session || session.revokedAt) {
+      if (!session) {
         return next(new ApiError(401, "Sessiya tugatilgan, qayta kiring"));
       }
     }

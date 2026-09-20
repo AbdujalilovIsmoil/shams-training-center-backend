@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const { detectOS, detectBrowser } = require("../utils/deviceInfo");
 
 const mapRow = (row) => ({
   id: row.id,
@@ -7,8 +8,9 @@ const mapRow = (row) => ({
   city: row.city,
   country: row.country,
   userAgent: row.user_agent,
+  os: detectOS(row.user_agent),
+  browser: detectBrowser(row.user_agent),
   jti: row.jti,
-  revokedAt: row.revoked_at,
   createdAt: row.created_at,
 });
 
@@ -50,9 +52,12 @@ const findByJti = async (jti) => {
   return rows[0] ? mapRow(rows[0]) : null;
 };
 
+// Sessiyani chiqarib yuborish — qatorni "revoked" deb belgilash o'rniga
+// jadvaldan butunlay o'chiradi: shu bois "Kirish tarixi" doim faqat hozir
+// FAOL bo'lgan sessiyalarni ko'rsatadi, chiqarilganlar ro'yxatda qolmaydi.
 const revoke = async (id) => {
   const { rows } = await pool.query(
-    "UPDATE login_logs SET revoked_at = now() WHERE id = $1 AND revoked_at IS NULL RETURNING *",
+    "DELETE FROM login_logs WHERE id = $1 RETURNING *",
     [id]
   );
 
@@ -68,13 +73,13 @@ const getRecent = async (limit = 50) => {
   return rows.map(mapRow);
 };
 
-// Parol o'zgartirilganda xavfsizlik uchun joriy sessiyadan boshqa barcha faol
-// sessiyalar chiqarib yuboriladi (jti bo'yicha, joriy sessiya tegilmaydi).
+// Login qilinganda (yagona faol sessiya siyosati) va "Boshqalarni chiqarib
+// yuborish" tugmasi bosilganda — joriy sessiyadan (jti) boshqa barcha
+// qatorlar jadvaldan o'chiriladi, ular endi "Kirish tarixi"da ko'rinmaydi.
 const revokeAllExcept = async (username, exceptJti) => {
   await pool.query(
-    `UPDATE login_logs
-     SET revoked_at = now()
-     WHERE username = $1 AND revoked_at IS NULL AND (jti IS NULL OR jti != $2)`,
+    `DELETE FROM login_logs
+     WHERE username = $1 AND (jti IS NULL OR jti != $2)`,
     [username, exceptJti || null]
   );
 };

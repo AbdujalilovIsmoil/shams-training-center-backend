@@ -12,9 +12,9 @@ Barcha javoblar `{ "success": boolean, "data"?: ..., "message"?: string }` shakl
 |---|---|---|---|
 | POST | `/auth/login` | ochiq | `{ username, password }` → `{ token, username }`. Muvaffaqiyatli kirishda fonda IP/shahar/mamlakat/brauzer bazaga yoziladi. **Bir vaqtda faqat bitta sessiya faol bo'ladi** — yangi tizim/qurilmadan (Windows, macOS, Linux va h.k.) kirilganda avvalgi barcha sessiyalar (boshqa tizimlardagilar ham) avtomatik chiqarib yuboriladi |
 | GET | `/auth/me` | admin | joriy admin ma'lumoti |
-| GET | `/auth/login-logs` | admin | so'nggi 200 ta kirish: `{ id, username, ip, city, country, userAgent, jti, revokedAt, createdAt }[]` — admin panel "Kirish tarixi" sahifasi shu yerdan o'qiydi (hozir faol bo'lgan barcha sessiyalar shu ro'yxatda ko'rinadi) |
-| DELETE | `/auth/login-logs/:id` | admin | shu sessiyani chiqarib yuboradi (`revokedAt` belgilanadi, keyingi so'rovda token rad etiladi). **O'z joriy sessiyangizni chiqarib yubora olmaysiz** — `400` bilan rad etiladi |
-| POST | `/auth/login-logs/revoke-others` | admin | joriy sessiyadan **boshqa barcha faol sessiyalarni** bir zumda chiqarib yuboradi, yangilangan ro'yxatni qaytaradi |
+| GET | `/auth/login-logs` | admin | hozir **faol** bo'lgan barcha sessiyalar: `{ id, username, ip, city, country, userAgent, os, browser, jti, createdAt }[]`. Ro'yxat **joriy so'rovni yuborayotgan admin sessiyasi birinchi**, qolgan boshqa sessiyalar keyin keladigan tartibda qaytadi. `os`/`browser` `User-Agent` sarlavhasidan backendda aniqlanadi (Node'ning o'rnatilgan `os` moduli emas — u faqat serverning o'z tizimini bilar edi, klientnikini emas) |
+| DELETE | `/auth/login-logs/:id` | admin | shu sessiyani **butunlay o'chiradi** (soft-revoke emas) — o'sha token bilan keyingi so'rov darhol rad etiladi va sessiya ro'yxatda boshqa ko'rinmaydi. **O'z joriy sessiyangizni chiqarib yubora olmaysiz** — `400` bilan rad etiladi |
+| POST | `/auth/login-logs/revoke-others` | admin | joriy sessiyadan **boshqa barcha faol sessiyalarni** jadvaldan butunlay o'chiradi, yangilangan (faqat joriy sessiyani o'z ichiga olgan) ro'yxatni qaytaradi |
 
 ## Posts (bloglar)
 

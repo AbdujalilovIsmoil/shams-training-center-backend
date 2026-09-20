@@ -17,6 +17,21 @@ const fillLocationInBackground = async (logId, ip) => {
   await loginLogsStore.setLocation(logId, { city, country });
 };
 
+// "Kirish tarixi" ro'yxatida so'rovni yuborayotgan admin o'zining joriy
+// sessiyasini birinchi bo'lib, undan keyin esa boshqalarni ko'rishi uchun.
+const withCurrentFirst = (logs, currentJti) => {
+  if (!currentJti) return logs;
+
+  const current = [];
+  const others = [];
+
+  for (const log of logs) {
+    (log.jti && log.jti === currentJti ? current : others).push(log);
+  }
+
+  return [...current, ...others];
+};
+
 const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
 
@@ -70,11 +85,11 @@ const me = asyncHandler(async (req, res) => {
 });
 
 const getLoginLogs = asyncHandler(async (req, res) => {
-  // 50 emas, 200 — negaki faqat "eng so'nggilar" emas, hozir faol bo'lgan
-  // (revoke qilinmagan) barcha sessiyalar ro'yxatda ko'rinishi kerak,
-  // shu jumladan boshqa qurilma/brauzerdan kirilganlari ham.
+  // Jadvalda endi faqat hozir FAOL sessiyalar saqlanadi (chiqarilganlar
+  // darhol o'chiriladi), shuning uchun limit ko'p bo'lishi shart emas —
+  // 200 shunchaki katta yetarli chegara.
   const logs = await loginLogsStore.getRecent(200);
-  res.json({ success: true, data: logs });
+  res.json({ success: true, data: withCurrentFirst(logs, req.user.jti) });
 });
 
 // Joriy sessiyadan boshqa barcha faol sessiyalarni bir zumda chiqarib
@@ -83,7 +98,7 @@ const getLoginLogs = asyncHandler(async (req, res) => {
 const revokeOtherSessions = asyncHandler(async (req, res) => {
   await loginLogsStore.revokeAllExcept(req.user.username, req.user.jti);
   const logs = await loginLogsStore.getRecent(200);
-  res.json({ success: true, data: logs });
+  res.json({ success: true, data: withCurrentFirst(logs, req.user.jti) });
 });
 
 const revokeLoginLog = asyncHandler(async (req, res) => {
