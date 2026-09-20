@@ -56,7 +56,12 @@ const updateBanner = asyncHandler(async (req, res) => {
       );
     }
 
-    return { imageUrl, linkUrl, durationSeconds: Math.round(durationSeconds) };
+    return {
+      imageUrl,
+      linkUrl,
+      durationSeconds: Math.round(durationSeconds),
+      isEnabled: item?.isEnabled !== false,
+    };
   });
 
   const updated = await adBannerStore.replaceAll({
@@ -67,4 +72,17 @@ const updateBanner = asyncHandler(async (req, res) => {
   res.json({ success: true, data: updated });
 });
 
-module.exports = { getBanner, updateBanner, DEFAULT_DURATION };
+// "O'chirish" tugmasi bosilganda shu bitta rasm darhol (saqlash tugmasini
+// bosmasdan) backendda o'chiriladi.
+const deleteBannerItem = asyncHandler(async (req, res) => {
+  const removed = await adBannerStore.deleteItem(req.params.id);
+
+  if (!removed) {
+    throw new ApiError(404, "Banner rasmi topilmadi");
+  }
+
+  const updated = await adBannerStore.getAll();
+  res.json({ success: true, data: updated });
+});
+
+module.exports = { getBanner, updateBanner, deleteBannerItem, DEFAULT_DURATION };

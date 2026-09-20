@@ -59,10 +59,23 @@ const deleteTestimonial = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { id: req.params.id } });
 });
 
+// Admin panelda drag-and-drop bilan tashlangan yangi tartibni saqlaydi.
+const reorderTestimonials = asyncHandler(async (req, res) => {
+  const { ids } = req.body || {};
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new ApiError(400, "Tartib ro'yxati noto'g'ri");
+  }
+
+  const testimonials = await testimonialsStore.reorder(ids);
+  res.json({ success: true, data: testimonials });
+});
+
 module.exports = {
   getTestimonials,
   getTestimonialById,
   createTestimonial,
   updateTestimonial,
   deleteTestimonial,
+  reorderTestimonials,
 };

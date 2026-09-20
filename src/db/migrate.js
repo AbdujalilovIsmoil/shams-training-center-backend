@@ -7,6 +7,7 @@ const pool = require("../config/db");
 const env = require("../config/env");
 const adminsRepository = require("../repositories/adminsRepository");
 const adBannerStore = require("../services/adBannerStore");
+const testimonialsStore = require("../services/testimonialsStore");
 
 const run = async () => {
   const schemaPath = path.join(__dirname, "schema.sql");
@@ -47,11 +48,17 @@ const run = async () => {
             imageUrl: legacy.image_url,
             linkUrl: legacy.link_url,
             durationSeconds: 5,
+            isEnabled: true,
           },
         ],
       });
     }
   }
+
+  // Bir martalik migratsiya: "O'quvchilar fikri" tartiblash uchun qo'shilgan
+  // "position" ustuni hali bo'sh bo'lgan qatorlarga joriy tartib asosida
+  // qiymat beriladi.
+  await testimonialsStore.backfillPositions();
 
   console.log("Migratsiya muvaffaqiyatli yakunlandi");
   await pool.end();

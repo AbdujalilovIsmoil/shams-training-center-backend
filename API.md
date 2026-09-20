@@ -86,8 +86,9 @@ har biriga havola/davomiylik kiritadi va butun bannerni yoqadi/o'chiradi.
 
 | Metod | Yo'l | Ruxsat | Tavsif |
 |---|---|---|---|
-| GET | `/banner` | ochiq | joriy holatni qaytaradi: `{ isEnabled, items: [{ id, imageUrl, linkUrl, durationSeconds }] }` |
-| PUT | `/banner` | admin | `{ isEnabled, items: [{ imageUrl, linkUrl, durationSeconds }] }` — butun ro'yxatni almashtiradi. `items` ko'pi bilan 5 ta bo'lishi mumkin; `isEnabled: true` bo'lsa kamida bitta element, har birida to'g'ri `linkUrl` va 1–60 oralig'idagi `durationSeconds` majburiy |
+| GET | `/banner` | ochiq | joriy holatni qaytaradi: `{ isEnabled, items: [{ id, imageUrl, linkUrl, durationSeconds, isEnabled }] }` |
+| PUT | `/banner` | admin | `{ isEnabled, items: [{ imageUrl, linkUrl, durationSeconds, isEnabled }] }` — butun ro'yxatni almashtiradi. `items` ko'pi bilan 5 ta bo'lishi mumkin; `isEnabled: true` bo'lsa kamida bitta element, har birida to'g'ri `linkUrl` va 1–60 oralig'idagi `durationSeconds` majburiy |
+| DELETE | `/banner/items/:id` | admin | shu bitta rasmni jadvaldan darhol o'chiradi (saqlash tugmasi bosilishini kutmaydi), yangilangan ro'yxatni qaytaradi |
 
 Namuna javob:
 
@@ -101,7 +102,8 @@ Namuna javob:
         "id": 1,
         "imageUrl": "/uploads/banner-123.jpg",
         "linkUrl": "https://t.me/Shams_markaz_admin",
-        "durationSeconds": 5
+        "durationSeconds": 5,
+        "isEnabled": true
       }
     ]
   }
@@ -109,9 +111,11 @@ Namuna javob:
 ```
 
 **Ishlatilishi:** client sayt (`shams-learning-centre`) `GET /banner`ni o'qiydi;
-`isEnabled` va kamida bitta element bo'lsa, rasmlar o'z `durationSeconds`i
-bo'yicha navbat bilan (animatsiya bilan) almashib, har biri o'z `linkUrl`iga
-olib boradigan havola ichida sayt eng tepasida ko'rsatiladi.
+banner umuman yoqilgan (`isEnabled`) bo'lsa, faqat o'zi ham yoqilgan
+(`item.isEnabled`) rasmlar o'z `durationSeconds`i bo'yicha navbat bilan
+(animatsiya bilan) almashib, har biri o'z `linkUrl`iga olib boradigan havola
+ichida sayt eng tepasida ko'rsatiladi. Har bir rasmni alohida yoqish/o'chirish
+va butunlay o'chirib tashlash mumkin.
 
 ## Rasm yuklash — `/upload`
 
@@ -129,3 +133,11 @@ olib boradigan havola ichida sayt eng tepasida ko'rsatiladi.
 Bular ushbu hujjatdan tashqarida — mos `routes/*.routes.js` va `controllers/*.controller.js`
 fayllarida CRUD naqshi bo'yicha yozilgan (testimonials/applications), yoki AI-chatbot uchun
 maxsus endpoint (`/chat`, OpenAI orqali javob qaytaradi).
+
+`GET /testimonials` natijasi endi `position` bo'yicha tartiblanadi (kichikdan
+kattaga, hali belgilanmaganlari oxirida — `created_at` bo'yicha). Admin panelda
+"O'quvchilar fikri" ro'yxatini drag-and-drop bilan tartiblash uchun:
+
+| Metod | Yo'l | Ruxsat | Tavsif |
+|---|---|---|---|
+| PATCH | `/testimonials/reorder` | admin | `{ ids: string[] }` — massivdagi tartib bo'yicha har bir fikrga `position` (indeks) beradi, yangilangan to'liq ro'yxatni qaytaradi |

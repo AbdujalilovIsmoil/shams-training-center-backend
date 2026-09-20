@@ -20,14 +20,18 @@ const mapRow = (row) => ({
   avatar: row.avatar || "",
   rate: row.rate,
   published: row.published,
+  position: row.position,
   text: row.text,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
 
+// Admin panelda drag-and-drop bilan belgilangan tartib bo'yicha, keyin esa
+// (hali tartib belgilanmagan yangi qatorlar uchun) eng so'nggi qo'shilgani
+// birinchi bo'lib turadi.
 const getAll = async () => {
   const { rows } = await pool.query(
-    "SELECT * FROM testimonials ORDER BY created_at DESC"
+    "SELECT * FROM testimonials ORDER BY position ASC NULLS LAST, created_at DESC"
   );
   return rows.map(mapRow);
 };
@@ -44,8 +48,9 @@ const create = async (data) => {
   const id = `testimonial_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   const { rows } = await pool.query(
-    `INSERT INTO testimonials (id, author, avatar, rate, published, text)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO testimonials (id, author, avatar, rate, published, text, position)
+     VALUES ($1, $2, $3, $4, $5, $6,
+       (SELECT COALESCE(MAX(position), -1) + 1 FROM testimonials))
      RETURNING *`,
     [
       id,
@@ -99,6 +104,48 @@ const remove = async (id) => {
   return rowCount > 0;
 };
 
+// Admin panelda drag-and-drop bilan tashlangan yangi tartibni saqlaydi —
+// `ids` massividagi har bir qator o'z indeksi bo'yicha "position" oladi.
+const reorder = async (ids) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    for (let i = 0; i < ids.length; i++) {
+      await client.query(
+        "UPDATE testimonials SET position = $1 WHERE id = $2",
+        [i, ids[i]]
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  return getAll();
+};
+
+// Bir martalik migratsiya uchun — "position" ustuni hali bo'sh bo'lgan
+// qatorlarga joriy (created_at bo'yicha) tartib asosida qiymat beradi, shu
+// bilan birinchi deploy'da ko'rinish tartibi o'zgarmaydi.
+const backfillPositions = async () => {
+  await pool.query(`
+    UPDATE testimonials
+    SET position = sub.rn
+    FROM (
+      SELECT id, ROW_NUMBER() OVER (ORDER BY created_at DESC) - 1 AS rn
+      FROM testimonials
+      WHERE position IS NULL
+    ) sub
+    WHERE testimonials.id = sub.id
+  `);
+};
+
 module.exports = {
   LANGS,
   getAll,
@@ -106,4 +153,6 @@ module.exports = {
   create,
   update,
   remove,
+  reorder,
+  backfillPositions,
 };

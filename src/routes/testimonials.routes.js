@@ -6,11 +6,13 @@ const {
   createTestimonial,
   updateTestimonial,
   deleteTestimonial,
+  reorderTestimonials,
 } = require("../controllers/testimonials.controller");
 
 const router = Router();
 
 router.get("/", getTestimonials);
+router.patch("/reorder", requireAuth, reorderTestimonials);
 router.get("/:id", getTestimonialById);
 
 router.post("/", requireAuth, createTestimonial);

@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS testimonials (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Admin panelda drag-and-drop bilan qo'lda belgilanadigan tartib — sayt ham
+-- shu tartibda ko'rsatadi. Mavjud qatorlar uchun bir martalik migrate.js
+-- orqali (created_at bo'yicha) to'ldiriladi.
+ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS position INTEGER;
+
 CREATE TABLE IF NOT EXISTS applications (
   id TEXT PRIMARY KEY,
   full_name TEXT NOT NULL,
@@ -97,16 +102,22 @@ CREATE TABLE IF NOT EXISTS ad_banner_settings (
 
 INSERT INTO ad_banner_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
--- Har bir banner rasmi o'zining havolasi va ekranda necha soniya turishini
--- (duration_seconds) belgilaydi; position ro'yxatdagi tartibni bildiradi.
+-- Har bir banner rasmi o'zining havolasi, ekranda necha soniya turishini
+-- (duration_seconds) va alohida ko'rinish holatini (is_enabled) belgilaydi;
+-- position ro'yxatdagi tartibni bildiradi.
 CREATE TABLE IF NOT EXISTS ad_banner_items (
   id SERIAL PRIMARY KEY,
   image_url TEXT NOT NULL,
   link_url TEXT NOT NULL,
   duration_seconds INTEGER NOT NULL DEFAULT 5,
+  is_enabled BOOLEAN NOT NULL DEFAULT true,
   position INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Jadval avvalroq yaratilgan bo'lsa ham (is_enabled qo'shilishidan oldin)
+-- ustun mavjud bo'lishi uchun.
+ALTER TABLE ad_banner_items ADD COLUMN IF NOT EXISTS is_enabled BOOLEAN NOT NULL DEFAULT true;
 
 -- Admin panelga har bir kirish (login) urinishi shu yerga yoziladi —
 -- "qayerdan kirilgani" (IP, shahar/mamlakat, brauzer) ko'rinishi uchun.
