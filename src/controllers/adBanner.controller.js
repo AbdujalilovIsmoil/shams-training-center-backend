@@ -2,24 +2,42 @@ const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const adBannerStore = require("../services/adBannerStore");
 
-// Sayt tepasidagi banner — client sayt shu orqali o'qiydi, avtorizatsiya
-// talab qilinmaydi. Yoqilgan-yoqilmaganidan qat'i nazar joriy holatni
-// qaytaradi (admin panel tahrirlash formasini shu bilan to'ldiradi).
+const MAX_ITEMS = 5;
+const DEFAULT_DURATION = 5;
+
+// Sayt tepasidagi banner karuseli — client sayt shu orqali o'qiydi,
+// avtorizatsiya talab qilinmaydi.
 const getBanner = asyncHandler(async (req, res) => {
-  const banner = await adBannerStore.get();
+  const banner = await adBannerStore.getAll();
   res.json({ success: true, data: banner });
 });
 
 const updateBanner = asyncHandler(async (req, res) => {
-  const { imageUrl, linkUrl, isEnabled } = req.body || {};
+  const { isEnabled, items } = req.body || {};
 
-  if (isEnabled) {
-    if (!imageUrl || typeof imageUrl !== "string") {
-      throw new ApiError(400, "Banner yoqilishi uchun rasm tanlang");
+  if (!Array.isArray(items)) {
+    throw new ApiError(400, "Banner rasmlari ro'yxati noto'g'ri");
+  }
+
+  if (items.length > MAX_ITEMS) {
+    throw new ApiError(400, `Ko'pi bilan ${MAX_ITEMS} ta rasm qo'shish mumkin`);
+  }
+
+  if (isEnabled && items.length === 0) {
+    throw new ApiError(400, "Banner yoqilishi uchun kamida bitta rasm kerak");
+  }
+
+  const normalized = items.map((item, index) => {
+    const imageUrl = typeof item?.imageUrl === "string" ? item.imageUrl.trim() : "";
+    const linkUrl = typeof item?.linkUrl === "string" ? item.linkUrl.trim() : "";
+    const durationSeconds = Number(item?.durationSeconds);
+
+    if (!imageUrl) {
+      throw new ApiError(400, `${index + 1}-rasm tanlanmagan`);
     }
 
-    if (!linkUrl || typeof linkUrl !== "string") {
-      throw new ApiError(400, "Banner yoqilishi uchun havola manzilini kiriting");
+    if (!linkUrl) {
+      throw new ApiError(400, `${index + 1}-rasm uchun havola manzili kerak`);
     }
 
     try {
@@ -27,18 +45,26 @@ const updateBanner = asyncHandler(async (req, res) => {
     } catch {
       throw new ApiError(
         400,
-        "Havola manzili to'liq bo'lishi kerak (masalan https://...)"
+        `${index + 1}-rasm uchun havola to'liq bo'lishi kerak (masalan https://...)`
       );
     }
-  }
 
-  const updated = await adBannerStore.update({
-    imageUrl: typeof imageUrl === "string" ? imageUrl : "",
-    linkUrl: typeof linkUrl === "string" ? linkUrl : "",
+    if (!Number.isFinite(durationSeconds) || durationSeconds < 1 || durationSeconds > 60) {
+      throw new ApiError(
+        400,
+        `${index + 1}-rasm uchun davomiylik 1 dan 60 gacha son bo'lishi kerak`
+      );
+    }
+
+    return { imageUrl, linkUrl, durationSeconds: Math.round(durationSeconds) };
+  });
+
+  const updated = await adBannerStore.replaceAll({
     isEnabled: Boolean(isEnabled),
+    items: normalized,
   });
 
   res.json({ success: true, data: updated });
 });
 
-module.exports = { getBanner, updateBanner };
+module.exports = { getBanner, updateBanner, DEFAULT_DURATION };

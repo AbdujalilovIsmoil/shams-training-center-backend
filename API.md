@@ -79,14 +79,15 @@ Namuna javob:
 
 ## Sayt tepasidagi reklama banneri — `/banner`
 
-Sayt eng tepasida ko'rinadigan bitta katta banner (rasm + bosilganda o'tiladigan
-havola). Admin panel "Banner" sahifasidan rasm yuklaydi (`/upload` orqali),
-havolani kiritadi va yoqadi/o'chiradi.
+Sayt eng tepasida ko'rinadigan, ko'pi bilan **5 ta rasmdan** iborat karusel.
+Har bir rasmning o'z havolasi va ekranda necha soniya turishi (`durationSeconds`)
+bor. Admin panel "Banner" sahifasidan rasmlarni yuklaydi (`/upload` orqali),
+har biriga havola/davomiylik kiritadi va butun bannerni yoqadi/o'chiradi.
 
 | Metod | Yo'l | Ruxsat | Tavsif |
 |---|---|---|---|
-| GET | `/banner` | ochiq | joriy holatni qaytaradi: `{ imageUrl, linkUrl, isEnabled, updatedAt }` |
-| PUT | `/banner` | admin | `{ imageUrl, linkUrl, isEnabled }` ni saqlaydi. `isEnabled: true` bo'lsa `imageUrl` va to'g'ri formatdagi `linkUrl` majburiy |
+| GET | `/banner` | ochiq | joriy holatni qaytaradi: `{ isEnabled, items: [{ id, imageUrl, linkUrl, durationSeconds }] }` |
+| PUT | `/banner` | admin | `{ isEnabled, items: [{ imageUrl, linkUrl, durationSeconds }] }` — butun ro'yxatni almashtiradi. `items` ko'pi bilan 5 ta bo'lishi mumkin; `isEnabled: true` bo'lsa kamida bitta element, har birida to'g'ri `linkUrl` va 1–60 oralig'idagi `durationSeconds` majburiy |
 
 Namuna javob:
 
@@ -94,17 +95,23 @@ Namuna javob:
 {
   "success": true,
   "data": {
-    "imageUrl": "/uploads/banner-123.jpg",
-    "linkUrl": "https://t.me/Shams_markaz_admin",
     "isEnabled": true,
-    "updatedAt": "2026-09-20T12:00:00.000Z"
+    "items": [
+      {
+        "id": 1,
+        "imageUrl": "/uploads/banner-123.jpg",
+        "linkUrl": "https://t.me/Shams_markaz_admin",
+        "durationSeconds": 5
+      }
+    ]
   }
 }
 ```
 
 **Ishlatilishi:** client sayt (`shams-learning-centre`) `GET /banner`ni o'qiydi;
-`isEnabled` va `imageUrl` bo'lsagina rasm `linkUrl`ga olib boradigan havola
-ichida sayt eng tepasida ko'rsatiladi.
+`isEnabled` va kamida bitta element bo'lsa, rasmlar o'z `durationSeconds`i
+bo'yicha navbat bilan (animatsiya bilan) almashib, har biri o'z `linkUrl`iga
+olib boradigan havola ichida sayt eng tepasida ko'rsatiladi.
 
 ## Rasm yuklash — `/upload`
 

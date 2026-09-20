@@ -1,27 +1,73 @@
 const pool = require("../config/db");
 
-const mapRow = (row) => ({
+const mapItem = (row) => ({
+  id: row.id,
   imageUrl: row.image_url,
   linkUrl: row.link_url,
-  isEnabled: row.is_enabled,
-  updatedAt: row.updated_at,
+  durationSeconds: row.duration_seconds,
 });
 
-const get = async () => {
-  const { rows } = await pool.query("SELECT * FROM ad_banner WHERE id = 1");
-  return rows[0] ? mapRow(rows[0]) : null;
-};
-
-const update = async ({ imageUrl, linkUrl, isEnabled }) => {
+const getSettings = async () => {
   const { rows } = await pool.query(
-    `UPDATE ad_banner
-     SET image_url = $1, link_url = $2, is_enabled = $3, updated_at = now()
-     WHERE id = 1
-     RETURNING *`,
-    [imageUrl || null, linkUrl || null, Boolean(isEnabled)]
+    "SELECT is_enabled FROM ad_banner_settings WHERE id = 1"
   );
-
-  return mapRow(rows[0]);
+  return { isEnabled: rows[0]?.is_enabled ?? false };
 };
 
-module.exports = { get, update };
+const getItems = async () => {
+  const { rows } = await pool.query(
+    "SELECT * FROM ad_banner_items ORDER BY position ASC, id ASC"
+  );
+  return rows.map(mapItem);
+};
+
+const getAll = async () => {
+  const [{ isEnabled }, items] = await Promise.all([
+    getSettings(),
+    getItems(),
+  ]);
+  return { isEnabled, items };
+};
+
+// Profil sahifasidagi ro'yxatni to'liq almashtiradi — eskisi o'chirilib,
+// yangi tartib bilan qayta yoziladi. Bitta tranzaksiyada bajariladi.
+const replaceAll = async ({ isEnabled, items }) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `UPDATE ad_banner_settings SET is_enabled = $1, updated_at = now() WHERE id = 1`,
+      [Boolean(isEnabled)]
+    );
+
+    await client.query("DELETE FROM ad_banner_items");
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      await client.query(
+        `INSERT INTO ad_banner_items (image_url, link_url, duration_seconds, position)
+         VALUES ($1, $2, $3, $4)`,
+        [item.imageUrl, item.linkUrl, item.durationSeconds, i]
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  return getAll();
+};
+
+// Eski (bitta rasmli) ad_banner jadvalidan bir martalik migratsiya uchun.
+const getLegacyBanner = async () => {
+  const { rows } = await pool.query("SELECT * FROM ad_banner WHERE id = 1");
+  return rows[0] || null;
+};
+
+module.exports = { getAll, getSettings, getItems, replaceAll, getLegacyBanner };
