@@ -7,7 +7,6 @@ const ApiError = require("../utils/ApiError");
 const adminsRepository = require("../repositories/adminsRepository");
 const loginLogsStore = require("../services/loginLogsStore");
 const { lookupLocation } = require("../utils/geoLookup");
-const credentialsCipher = require("../utils/credentialsCipher");
 
 // Login javobini kutdirmaslik uchun IP->shahar aniqlash fonda bajariladi va
 // log qatori keyinroq shu ma'lumot bilan to'ldiriladi (qator o'zi login
@@ -108,105 +107,10 @@ const revokeLoginLog = asyncHandler(async (req, res) => {
   res.json({ success: true, data: revoked });
 });
 
-// Profil sahifasi uchun — admin o'zi kiritgan login va parolni ko'rishi.
-// Parol bcrypt hash sifatida qaytarilmasdan, alohida qaytarib ochiladigan
-// shifrlangan nusxadan (password_encrypted) o'qib ochiladi.
-const getProfile = asyncHandler(async (req, res) => {
-  const admin = await adminsRepository.findByUsername(req.user.username);
-
-  if (!admin) {
-    throw new ApiError(404, "Admin topilmadi");
-  }
-
-  let password = null;
-  if (admin.password_encrypted) {
-    try {
-      password = credentialsCipher.decrypt(admin.password_encrypted);
-    } catch {
-      password = null;
-    }
-  }
-
-  res.json({
-    success: true,
-    data: { username: admin.username, password },
-  });
-});
-
-const updateProfile = asyncHandler(async (req, res) => {
-  const { currentPassword, newUsername, newPassword } = req.body || {};
-
-  if (!currentPassword) {
-    throw new ApiError(400, "Joriy parolni kiriting");
-  }
-
-  const admin = await adminsRepository.findByUsername(req.user.username);
-  const isCurrentValid =
-    admin && bcrypt.compareSync(currentPassword, admin.password_hash);
-
-  if (!admin || !isCurrentValid) {
-    throw new ApiError(401, "Joriy parol noto'g'ri");
-  }
-
-  const nextUsername = (newUsername ?? admin.username).trim();
-  const nextPassword = newPassword || currentPassword;
-
-  if (!nextUsername) {
-    throw new ApiError(400, "Login bo'sh bo'lishi mumkin emas");
-  }
-
-  if (nextPassword.length < 6) {
-    throw new ApiError(400, "Parol kamida 6 belgidan iborat bo'lishi kerak");
-  }
-
-  if (nextUsername !== admin.username) {
-    const existing = await adminsRepository.findByUsername(nextUsername);
-    if (existing) {
-      throw new ApiError(409, "Bu login band, boshqasini tanlang");
-    }
-  }
-
-  const passwordHash = bcrypt.hashSync(nextPassword, 10);
-  const passwordEncrypted = credentialsCipher.encrypt(nextPassword);
-
-  const updated = await adminsRepository.updateCredentials(admin.username, {
-    username: nextUsername,
-    passwordHash,
-    passwordEncrypted,
-  });
-
-  if (!updated) {
-    throw new ApiError(500, "Ma'lumotlarni yangilab bo'lmadi");
-  }
-
-  if (nextUsername !== admin.username) {
-    await loginLogsStore.renameUsername(admin.username, nextUsername);
-  }
-
-  // Xavfsizlik uchun boshqa barcha faol sessiyalar chiqarib yuboriladi —
-  // joriy sessiya (shu so'rovni yuborayotgan brauzer) tegilmaydi.
-  if (req.user.jti) {
-    await loginLogsStore.revokeAllExcept(nextUsername, req.user.jti);
-  }
-
-  const token = jwt.sign(
-    { username: nextUsername, jti: req.user.jti },
-    env.jwtSecret,
-    { expiresIn: env.jwtExpiresIn }
-  );
-
-  res.json({
-    success: true,
-    data: { token, username: nextUsername },
-  });
-});
-
 module.exports = {
   login,
   me,
   getLoginLogs,
   revokeLoginLog,
   revokeOtherSessions,
-  getProfile,
-  updateProfile,
 };

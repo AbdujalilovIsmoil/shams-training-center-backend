@@ -79,15 +79,6 @@ const revokeAllExcept = async (username, exceptJti) => {
   );
 };
 
-// Login o'zgartirilganda kirish tarixidagi eski qatorlar ham yangi username
-// bilan ko'rinishi uchun (hech qanday qator o'chirilmaydi/yo'qolmaydi).
-const renameUsername = async (oldUsername, newUsername) => {
-  await pool.query("UPDATE login_logs SET username = $1 WHERE username = $2", [
-    newUsername,
-    oldUsername,
-  ]);
-};
-
 module.exports = {
   create,
   setLocation,
@@ -96,5 +87,4 @@ module.exports = {
   revoke,
   getRecent,
   revokeAllExcept,
-  renameUsername,
 };

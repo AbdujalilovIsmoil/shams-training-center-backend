@@ -8,12 +8,6 @@ const env = {
     .filter(Boolean),
   jwtSecret: process.env.JWT_SECRET || "dev_secret_change_me",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  // Admin profilida parolni "ko'rsatish" uchun qaytarib ochiladigan (reversible)
-  // shifrlashda ishlatiladi. Alohida qiymat berilmasa JWT_SECRET'dan foydalaniladi.
-  credentialsEncKey:
-    process.env.CREDENTIALS_ENC_KEY ||
-    process.env.JWT_SECRET ||
-    "dev_secret_change_me",
   databaseUrl:
     process.env.DATABASE_URL || "postgresql://localhost:5432/shams_blog",
   // Faqat `npm run migrate` skripti admin foydalanuvchini shu login/parol bilan

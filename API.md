@@ -15,8 +15,6 @@ Barcha javoblar `{ "success": boolean, "data"?: ..., "message"?: string }` shakl
 | GET | `/auth/login-logs` | admin | so'nggi 200 ta kirish: `{ id, username, ip, city, country, userAgent, jti, revokedAt, createdAt }[]` — admin panel "Kirish tarixi" sahifasi shu yerdan o'qiydi (hozir faol bo'lgan barcha sessiyalar shu ro'yxatda ko'rinadi) |
 | DELETE | `/auth/login-logs/:id` | admin | shu sessiyani chiqarib yuboradi (`revokedAt` belgilanadi, keyingi so'rovda token rad etiladi). **O'z joriy sessiyangizni chiqarib yubora olmaysiz** — `400` bilan rad etiladi |
 | POST | `/auth/login-logs/revoke-others` | admin | joriy sessiyadan **boshqa barcha faol sessiyalarni** bir zumda chiqarib yuboradi, yangilangan ro'yxatni qaytaradi |
-| GET | `/auth/profile` | admin | `{ username, password }` — admin o'zi kiritgan joriy login va parolni ko'rish uchun (parol qaytarib ochiladigan shifrlangan nusxadan o'qiladi) |
-| PUT | `/auth/profile` | admin | `{ currentPassword, newUsername?, newPassword? }` → `{ token, username }`. Login/parolni o'zgartiradi; `currentPassword` majburiy va tekshiriladi. Muvaffaqiyatli o'zgartirishda **joriy sessiyadan boshqa barcha sessiyalar** avtomatik chiqarib yuboriladi va yangi `token` qaytariladi (frontend uni saqlab qo'yishi kerak) |
 
 ## Posts (bloglar)
 
