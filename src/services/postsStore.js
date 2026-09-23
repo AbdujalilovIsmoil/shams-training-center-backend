@@ -14,10 +14,22 @@ const toDateString = (value) => {
   return String(value).slice(0, 10);
 };
 
+// Eski admin panel/keshlangan build hali bitta "image" maydonini yuborishi
+// mumkin (deploy bosqichida) — shu holatda ham rasm yo'qolib ketmasligi
+// uchun uni bitta elementli "images" massiviga aylantiramiz.
+const normalizeImages = (data) => {
+  if (Array.isArray(data.images)) return data.images;
+  if (typeof data.image === "string" && data.image) return [data.image];
+  return null;
+};
+
 const mapRow = (row) => ({
   id: row.id,
   slug: row.slug,
   images: Array.isArray(row.images) ? row.images : [],
+  // Eski (bitta rasmli) admin panel/sayt build'lari deploy davrida hali
+  // ham "image" maydonini o'qishi mumkin — orqaga moslik uchun saqlanadi.
+  image: (Array.isArray(row.images) && row.images[0]) || row.image || "",
   date: toDateString(row.date),
   readTime: row.read_time,
   published: row.published,
@@ -73,7 +85,7 @@ const create = async (data) => {
     [
       id,
       data.slug,
-      JSON.stringify(Array.isArray(data.images) ? data.images : []),
+      JSON.stringify(normalizeImages(data) ?? []),
       data.date || new Date().toISOString().slice(0, 10),
       Number(data.readTime) || 1,
       data.published !== false,
@@ -93,7 +105,7 @@ const update = async (id, data) => {
 
   const merged = {
     slug: data.slug ?? existing.slug,
-    images: Array.isArray(data.images) ? data.images : existing.images,
+    images: normalizeImages(data) ?? existing.images,
     date: data.date ?? existing.date,
     readTime:
       data.readTime !== undefined ? Number(data.readTime) : existing.readTime,
