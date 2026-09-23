@@ -51,6 +51,17 @@ CREATE TABLE IF NOT EXISTS posts (
 -- (CREATE TABLE IF NOT EXISTS mavjud jadvalni o'zgartirmaydi).
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;
 
+-- Maqola endi bitta emas, bir nechta (karusel sifatida ko'rsatiladigan)
+-- rasmga ega bo'lishi mumkin — tartib massiv ichidagi tartibga mos keladi.
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS images JSONB NOT NULL DEFAULT '[]';
+
+-- Bir martalik ko'chirish: eski bitta "image" ustunida qiymat bo'lgan va
+-- "images" hali to'ldirilmagan qatorlar uchun eski rasm birinchi element
+-- sifatida ko'chiriladi, hech narsa yo'qolmaydi.
+UPDATE posts
+SET images = jsonb_build_array(image)
+WHERE images = '[]'::jsonb AND image IS NOT NULL AND image <> '';
+
 -- Butun sayt bo'yicha (har bir maqolaga bog'lanmagan) umumiy tashrif soni —
 -- doim bitta qator (id = 1) saqlanadi va shu qator ustida oshiriladi.
 CREATE TABLE IF NOT EXISTS site_views (

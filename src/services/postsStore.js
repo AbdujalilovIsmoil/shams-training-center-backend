@@ -17,7 +17,7 @@ const toDateString = (value) => {
 const mapRow = (row) => ({
   id: row.id,
   slug: row.slug,
-  image: row.image,
+  images: Array.isArray(row.images) ? row.images : [],
   date: toDateString(row.date),
   readTime: row.read_time,
   published: row.published,
@@ -67,13 +67,13 @@ const create = async (data) => {
   const id = `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   const { rows } = await pool.query(
-    `INSERT INTO posts (id, slug, image, date, read_time, published, category, title, excerpt, content)
+    `INSERT INTO posts (id, slug, images, date, read_time, published, category, title, excerpt, content)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       id,
       data.slug,
-      data.image || "",
+      JSON.stringify(Array.isArray(data.images) ? data.images : []),
       data.date || new Date().toISOString().slice(0, 10),
       Number(data.readTime) || 1,
       data.published !== false,
@@ -93,7 +93,7 @@ const update = async (id, data) => {
 
   const merged = {
     slug: data.slug ?? existing.slug,
-    image: data.image ?? existing.image,
+    images: Array.isArray(data.images) ? data.images : existing.images,
     date: data.date ?? existing.date,
     readTime:
       data.readTime !== undefined ? Number(data.readTime) : existing.readTime,
@@ -113,13 +113,13 @@ const update = async (id, data) => {
 
   const { rows } = await pool.query(
     `UPDATE posts
-     SET slug = $1, image = $2, date = $3, read_time = $4, published = $5,
+     SET slug = $1, images = $2, date = $3, read_time = $4, published = $5,
          category = $6, title = $7, excerpt = $8, content = $9, updated_at = now()
      WHERE id = $10
      RETURNING *`,
     [
       merged.slug,
-      merged.image,
+      JSON.stringify(merged.images),
       merged.date,
       merged.readTime,
       merged.published,
