@@ -2,6 +2,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const slugify = require("../utils/slugify");
 const postsStore = require("../services/postsStore");
+const { removeUploadedFiles, extractUploadFilenames } = require("../utils/uploadedFiles");
 
 const buildUniqueSlug = async (rawSlug, fallbackTitle, excludeId) => {
   let base = slugify(rawSlug || fallbackTitle || "maqola");
@@ -83,10 +84,21 @@ const updatePost = asyncHandler(async (req, res) => {
 });
 
 const deletePost = asyncHandler(async (req, res) => {
+  const existing = await postsStore.getById(req.params.id);
   const removed = await postsStore.remove(req.params.id);
 
   if (!removed) {
     throw new ApiError(404, "Maqola topilmadi");
+  }
+
+  // Maqola o'chirilgach faqat unga tegishli rasmlar diskdan o'chiriladi
+  // (boshqa maqolada ishlatilayotganlari qoladi). Xato javobni buzmasin.
+  try {
+    const others = await postsStore.getAll();
+    const stillUsed = extractUploadFilenames(others);
+    await removeUploadedFiles(extractUploadFilenames(existing), stillUsed);
+  } catch (err) {
+    console.warn("Maqola rasmlarini o'chirib bo'lmadi:", err.message);
   }
 
   res.json({ success: true, data: { id: req.params.id } });

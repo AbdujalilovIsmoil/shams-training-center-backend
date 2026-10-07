@@ -31,12 +31,20 @@ const persistFile = async (file) => {
     withoutEnlargement: true,
   });
 
-  const output =
-    file.mimetype === "image/png"
-      ? await pipeline.png({ compressionLevel: 9 }).toBuffer()
-      : file.mimetype === "image/webp"
-        ? await pipeline.webp({ quality: 85 }).toBuffer()
-        : await pipeline.jpeg({ quality: 85, mozjpeg: true }).toBuffer();
+  let output;
+  try {
+    output =
+      file.mimetype === "image/png"
+        ? await pipeline.png({ compressionLevel: 9 }).toBuffer()
+        : file.mimetype === "image/webp"
+          ? await pipeline.webp({ quality: 85 }).toBuffer()
+          : await pipeline.jpeg({ quality: 85, mozjpeg: true }).toBuffer();
+  } catch (err) {
+    // Buzilgan/g'alati kodlangan rasm (masalan "libpng read error") siqilmasa
+    // ham yuklash yiqilmasin — asl faylni o'zgarishsiz saqlaymiz.
+    console.warn("Rasmni siqib bo'lmadi, asl holida saqlanadi:", err.message);
+    output = file.buffer;
+  }
 
   await fs.writeFile(path.join(UPLOAD_DIR, filename), output);
   return filename;
