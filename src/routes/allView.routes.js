@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const requireAuth = require("../middleware/auth.middleware");
 const createRateLimiter = require("../middleware/rateLimit.middleware");
-const { trackView, getViews } = require("../controllers/allView.controller");
+const { trackView, getViews, getViewsStats } = require("../controllers/allView.controller");
 
 const router = Router();
 
@@ -10,5 +10,6 @@ const trackRateLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 60 });
 
 router.post("/", trackRateLimiter, trackView);
 router.get("/", requireAuth, getViews);
+router.get("/stats", requireAuth, getViewsStats);
 
 module.exports = router;

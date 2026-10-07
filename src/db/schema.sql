@@ -71,6 +71,14 @@ CREATE TABLE IF NOT EXISTS site_views (
 
 INSERT INTO site_views (id, views) VALUES (1, 0) ON CONFLICT (id) DO NOTHING;
 
+-- Tashriflarning kunlik taqsimoti (Asia/Tashkent bo'yicha kun) — admin panelda
+-- kunlik/haftalik/oylik/yillik hamda ixtiyoriy sana oralig'i bo'yicha hisobot
+-- uchun. Bu jadval faqat yaratilgandan keyingi tashriflarni sanaydi.
+CREATE TABLE IF NOT EXISTS site_views_daily (
+  day DATE PRIMARY KEY,
+  views INTEGER NOT NULL DEFAULT 0
+);
+
 -- Bosh sahifadagi "2000+ o'quvchi", "110+ C1 daraja" kabi statistik
 -- raqamlar — doim bitta qator (id = 1) saqlanadi, admin panel shu qatorni
 -- yangilaydi, client sayt esa shu yerdan o'qib ko'rsatadi.
